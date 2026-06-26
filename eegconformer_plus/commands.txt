@@ -1,0 +1,10 @@
+# EEG Conformer Plus commands
+
+## Prepare windowed EEG data
+python eegconformer_plus/conformer_plus.py --prepare --label-source state --focused-minutes 10 --unfocused-minutes 20 --mat-root EEGData --out-dir data/eeg_attention --window 512 --stride 256
+
+## Train and evaluate
+python eegconformer_plus/conformer_plus.py --out-dir data/eeg_attention --epochs 80 --batch-size 64 --use-amp --cosine --lr 5e-4 --time-mask-ratio 0.12 --channel-drop-prob 0.06
+
+## Normalization ablation
+python eegconformer_plus/conformer_plus.py --out-dir data/eeg_attention --epochs 80 --batch-size 64 --use-amp --cosine --no-normalize --lr 5e-4 --time-mask-ratio 0.10 --channel-drop-prob 0.05

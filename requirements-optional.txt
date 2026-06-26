@@ -1,0 +1,4 @@
+kagglehub
+mamba-ssm
+pyriemann
+xgboost

@@ -1,0 +1,10 @@
+# Attention baseline commands
+
+## BiLSTM baseline
+python attention_baseline/train.py --data-root EEGData --epochs 50 --batch-size 64 --use-amp --model bilstm
+
+## CNN-BiLSTM baseline
+python attention_baseline/train.py --data-root EEGData --model cnn-bilstm --epochs 50 --batch-size 64 --use-amp --lr 1e-3 --hidden-size 256 --patience 5
+
+## Short smoke run
+python attention_baseline/train.py --data-root EEGData --model bilstm --epochs 10 --batch-size 32 --save-dir attention_baseline/experiments/debug_run

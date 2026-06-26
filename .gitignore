@@ -1,0 +1,76 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Data directories
+data/
+EEGData/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+
+# Cache
+.cache/
+*.cache
+
+# Model files
+*.pt
+*.pth
+*.h5
+*.ckpt
+
+# Generated experiment artifacts
+**/experiments/
+**/charts/
+**/outputs/
+**/results/
+**/metrics.json
+**/results.md
+**/*_results.json
+**/*.jsonl
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.csv

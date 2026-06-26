@@ -1,0 +1,13 @@
+# PhaseCDE commands
+
+## Prepare windowed EEG data
+python phase_cde/phase_cde.py --prepare --focused-minutes 10 --unfocused-minutes 20 --mat-root EEGData --out-dir data/eeg_attention --window 512 --stride 256
+
+## Train and evaluate
+python phase_cde/phase_cde.py --out-dir data/eeg_attention --epochs 80 --batch-size 64 --use-amp --lr 5e-4 --weight-decay 1e-2 --embed-dim 32 --cde-hidden 160
+
+## Normalization ablation
+python phase_cde/phase_cde.py --out-dir data/eeg_attention --epochs 80 --batch-size 64 --use-amp --no-normalize
+
+## Channel-diffusion ablation
+python phase_cde/phase_cde.py --out-dir data/eeg_attention --epochs 80 --batch-size 64 --use-amp --channel-dropout 0 --no-diffusion --dilations 1 1 1 --kernel-sizes 7 15 31

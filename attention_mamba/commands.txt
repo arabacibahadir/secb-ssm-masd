@@ -1,0 +1,10 @@
+# Attention Mamba commands
+
+## Train and evaluate with local data
+python attention_mamba/train.py --data-root EEGData --epochs 60 --batch-size 64 --use-amp --lr 4e-4 --log-every 10 --bidir
+
+## Download the public dataset and run training
+python attention_mamba/train.py --download --epochs 60 --batch-size 64 --use-amp --lr 4e-4 --log-every 10 --bidir
+
+## Short smoke run
+python attention_mamba/train.py --data-root EEGData --epochs 10 --batch-size 32 --log-every 5 --save-dir attention_mamba/experiments/debug_run

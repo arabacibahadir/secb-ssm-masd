@@ -1,0 +1,10 @@
+# FBSpecNet commands
+
+## Prepare windowed EEG data
+python fbspecnet/train.py --prepare --label-source state --focused-minutes 10 --unfocused-minutes 20 --mat-root EEGData --out-dir data/eeg_attention --window 512 --stride 128
+
+## Train and evaluate
+python fbspecnet/train.py --out-dir data/eeg_attention --epochs 120 --batch-size 64 --use-amp --cosine --no-normalize --class-weights --focal --log-every 10
+
+## Frequency-branch ablation
+python fbspecnet/train.py --out-dir data/eeg_attention --epochs 120 --batch-size 64 --use-amp --cosine --no-normalize --class-weights --focal --no-freq

@@ -1,0 +1,7 @@
+# EEG Conformer baseline commands
+
+## Prepare windowed EEG data
+python eegconformer/baseline.py --prepare --label-source state --focused-minutes 10 --unfocused-minutes 20 --mat-root EEGData --out-dir data/eeg_attention --window 512 --stride 256
+
+## Train and evaluate
+python eegconformer/baseline.py --out-dir data/eeg_attention --epochs 50 --batch-size 64 --use-amp --no-normalize

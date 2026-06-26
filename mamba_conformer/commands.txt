@@ -1,0 +1,10 @@
+# Mamba Conformer commands
+
+## Prepare windowed EEG data
+python mamba_conformer/mambaconformer.py --prepare --label-source state --focused-minutes 10 --unfocused-minutes 20 --mat-root EEGData --out-dir data/eeg_attention --window 512 --stride 256
+
+## Train and evaluate
+python mamba_conformer/mambaconformer.py --out-dir data/eeg_attention --epochs 80 --batch-size 64 --use-amp --bidir-ssm --cosine --lr 5e-4 --log-every 10
+
+## Normalization ablation
+python mamba_conformer/mambaconformer.py --out-dir data/eeg_attention --epochs 80 --batch-size 64 --use-amp --bidir-ssm --cosine --no-normalize --lr 5e-4 --log-every 10
