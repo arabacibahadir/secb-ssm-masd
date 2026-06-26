@@ -1,47 +1,57 @@
 # SECB-SSM Subject-Independent LOSO Evaluation
 
-Bu klasör, mevcut `attention_mamba/train.py` içindeki `MambaEEG` sınıfını kaynak
-dosyayı değiştirmeden yükler ve strict leave-one-subject-out (LOSO) değerlendirmesi
-yapar.
+This directory provides a strict leave-one-subject-out (LOSO) evaluation
+pipeline for the proposed SECB-SSM model. It loads the `MambaEEG` class from
+`attention_mamba/train.py` without modifying the original training source file.
 
-## Protokol
+## Protocol
 
-- 5 dış fold: S1-S5 sırayla tamamen test kümesinde tutulur.
-- Validation, kalan dört katılımcının her birinden seçilen birer tam kayıttan oluşur.
-- Aynı kaydın pencereleri train ve validation arasında bölünmez.
-- Kanal ortalaması ve standart sapması yalnız training kayıtlarından hesaplanır.
-- Pencere uzunluğu 256 örnek, stride 240 örnek ve örtüşme 16 örnektir.
-- Proxy etiketleri: 0-10 dakika Focused, 10-20 dakika Unfocused, >20 dakika Drowsy.
-- Full profil seed 42, 43, 44, 45 ve 46 ile toplam 25 eğitim çalıştırır.
+- Five outer folds are used: S1-S5 are held out as the test subject in turn.
+- In each fold, all recordings from the held-out subject are used only for
+  testing.
+- Validation is selected at the full-record level: one complete recording is
+  selected from each of the four remaining subjects.
+- Windows from the same recording are never split between training and
+  validation.
+- Channel-wise mean and standard deviation are computed only from the true
+  training records.
+- The window length is 256 samples, the stride is 240 samples, and the overlap
+  is 16 samples.
+- Proxy labels are kept consistent with the manuscript protocol:
+  0-10 min = Focused, 10-20 min = Unfocused, and >20 min = Drowsy.
+- The full profile runs five seeds, 42-46, across five LOSO folds, for 25 total
+  training runs.
 
-## Katılımcı eşleme varsayımı
+## Subject-to-record mapping assumption
 
-Kamuya açık `.mat` dosyalarında açık participant ID alanı bulunmamaktadır.
-`subject_map.csv`, özgün çalışmada bildirilen katılımcı başına yedi deney ve
-dosyaların kronolojik oluşturulma tarihleri kullanılarak şu eşlemeyi tanımlar:
+The public `.mat` files do not include explicit participant identifiers.
+Therefore, `subject_map.csv` defines a transparent mapping assumption based on
+the five-participant acquisition protocol reported in the original study and
+the chronological order of the public files:
 
-- S1: kayıt 1-7
-- S2: kayıt 8-14
-- S3: kayıt 15-21
-- S4: kayıt 22-28
-- S5: kayıt 29-34
+- S1: records 1-7
+- S2: records 8-14
+- S3: records 15-21
+- S4: records 22-28
+- S5: records 29-34
 
-Son blokta yalnız altı kayıt bulunmaktadır. Bu eşleme bilimsel raporda açık bir
-metadata varsayımı olarak belirtilmelidir.
+The final block contains six recordings. This mapping should be reported as an
+explicit metadata assumption when discussing the LOSO results.
 
-## Kurulum
+## Installation
 
-Çalışma klasörünün kökünde:
+From the repository root:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r .\loso_evaluation\requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r .\ablation_studies\loso_evaluation\requirements.txt
 ```
 
-CUDA destekli PyTorch kurulumu gerekiyorsa uygun komutu PyTorch'un resmi kurulum
-sayfasından seçin. Kod CUDA varsa otomatik kullanır; aksi halde CPU'da çalışır.
+If CUDA-enabled PyTorch is required, install the appropriate PyTorch build from
+the official PyTorch installation page. The code automatically uses CUDA when
+available; otherwise, it runs on CPU.
 
-## Lisans ve veri erişimi
+## License and dataset access
 
 The source code in this repository is released under the MIT License.
 The MASD EEG dataset is not redistributed in this repository and should be
@@ -49,63 +59,67 @@ obtained from the original Kaggle dataset page:
 https://www.kaggle.com/datasets/inancigdem/eeg-data-for-mental-attention-state-detection.
 Users are responsible for complying with the dataset license and terms of use.
 
-## Önce smoke testi
+## Smoke test
 
-Smoke profil tek fold (S1), tek seed (42), iki epoch ve split başına en fazla
-64 pencere kullanır. Bu profil yalnız pipeline doğrulaması içindir; bilimsel
-sonuç olarak raporlanmamalıdır.
-
-```powershell
-.\.venv\Scripts\python.exe -m loso_evaluation.run --profile smoke
-```
-
-## Tam LOSO çalışması
+The smoke profile runs one fold (S1), one seed (42), two epochs, and at most
+64 windows per split. This profile is intended only to verify that the pipeline
+runs correctly; it should not be reported as a scientific result.
 
 ```powershell
-.\.venv\Scripts\python.exe -m loso_evaluation.run --profile full
+.\.venv\Scripts\python.exe -m ablation_studies.loso_evaluation.run --profile smoke
 ```
 
-Kesilen çalışma aynı komutla yeniden başlatılabilir. `status: complete` içeren
-koşular otomatik atlanır. Baştan çalıştırmak için `--force`, `.mat` önbelleğini
-yeniden üretmek için `--rebuild-cache` kullanın.
-
-Tek fold veya seed çalıştırma örneği:
+## Full LOSO run
 
 ```powershell
-.\.venv\Scripts\python.exe -m loso_evaluation.run --profile full --subjects S3 --seeds 42
+.\.venv\Scripts\python.exe -m ablation_studies.loso_evaluation.run --profile full
 ```
 
-## Çıktılar
+Interrupted runs can be resumed with the same command. Runs with
+`status: complete` in `result.json` are skipped automatically. Use `--force` to
+rerun completed folds and `--rebuild-cache` to regenerate the `.mat` cache.
 
-`results/<profile>/seed_<seed>/test_<subject>/` altında:
+Example for a single fold or seed:
 
-- `result.json`: validation/test metrikleri ve çalışma ayarları
-- `split_manifest.json`: kayıt ayrımları ve train-only normalizasyon değerleri
-- `history.json`: epoch geçmişi
-- `predictions.npz`: sıkıştırılmış tahmin dizileri
-- `predictions.csv.gz`: kayıt ve pencere kimlikli tahmin tablosu
-- İsteğe bağlı `best_model.pt` (`--save-checkpoints`)
+```powershell
+.\.venv\Scripts\python.exe -m ablation_studies.loso_evaluation.run --profile full --subjects S3 --seeds 42
+```
 
-`results/<profile>/` altında:
+## Outputs
+
+Each fold/seed directory is written under
+`results/<profile>/seed_<seed>/test_<subject>/` and contains:
+
+- `result.json`: validation/test metrics and run settings
+- `split_manifest.json`: record-level splits and train-only normalization values
+- `history.json`: epoch-level training history
+- `predictions.npz`: compressed prediction arrays
+- `predictions.csv.gz`: prediction table with recording and window identifiers
+- optional `best_model.pt` when `--save-checkpoints` is used
+
+The profile-level result directory contains:
 
 - `summary.json`
 - `summary.csv`
 - `loso_results.md`
 - `confusion_matrix.png`
 
-Ana sonuç, her seed için beş held-out katılımcının tahminleri birleştirildikten
-sonra hesaplanır; ardından beş seed üzerinden ortalama ve standart sapma raporlanır.
+The main LOSO result is computed by concatenating the predictions from all five
+held-out subjects within each seed and then reporting the mean and standard
+deviation across seeds.
 
-## Kod arşivine dahil edilmemesi gerekenler
+## Files that should not be included in source archives
 
-Dergi veya ek materyal kod paketine çalışma sırasında üretilen `cache/`,
-`results/`, `__pycache__/`, model checkpointleri ve veri dosyaları dahil
-edilmemelidir. Kod, kamuya açık MASD `.mat` dosyalarının kullanıcı tarafından
-yerel olarak indirilip `EEG Data/` klasörüne konmasını bekler.
+Generated `cache/`, `results/`, `__pycache__/`, model checkpoints, and data
+files should not be included in journal or supplementary code archives. The
+code expects users to download the public MASD `.mat` files locally and place
+them under an `EEG Data/` directory or pass the dataset path through
+`--data-root`.
 
-## Makalede yorumlama
+## Interpretation in the manuscript
 
-Bu çalışma yalnız SECB-SSM için LOSO sonucu üretir. EEGNet, TCN ve diğer baseline
-sonuçları mevcut epoch-wise protokole aittir. Bu nedenle LOSO sonucuyla
-baseline üstünlüğü iddia edilmemeli; baseline karşılaştırması açıkça
-"within the original epoch-wise protocol" şeklinde sınırlandırılmalıdır.
+This LOSO pipeline produces subject-independent results only for SECB-SSM.
+EEGNet, TCN, and the other baseline results in the manuscript belong to the
+original epoch-wise protocol. Therefore, the LOSO result should not be used to
+claim superiority over baselines. Baseline comparisons should be explicitly
+limited to the original epoch-wise protocol.
