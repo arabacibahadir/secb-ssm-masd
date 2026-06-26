@@ -360,7 +360,7 @@ class EEGConformerPlus(nn.Module):
         for layer in self.layers:
             x = layer(x, padding_mask=padding_mask)
         x = self.norm(x)
-        pooled = x.mean(dim=1)  # global ortalama havuzlama
+        pooled = x.mean(dim=1)  # global average pooling
         return self.head(pooled)
 
 
